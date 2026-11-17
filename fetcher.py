@@ -20,13 +20,9 @@ warnings.filterwarnings("ignore")
 # Lazy DB init — only runs once per Streamlit server process
 @st.cache_resource
 def _init_db():
-    try:
-        from db import init_db
-        init_db()
-        return True
-    except Exception as e:
-        st.warning(f"⚠️ DB init failed — running in offline mode: {e}")
-        return False
+    # Database intentionally disabled for cloud demo.
+    # Stock data will be fetched directly from Yahoo Finance.
+    return False
 
 
 
