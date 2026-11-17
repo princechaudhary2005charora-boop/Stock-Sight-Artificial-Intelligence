@@ -20,7 +20,7 @@ warnings.filterwarnings("ignore")
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Indian Stock Market Predictor | LSTM",
+   page_title="Stock Sight Artificial Intelligence",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -278,8 +278,8 @@ def apply_theme(fig, height: int, title: str = ""):
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## 📈 Indian Stock Predictor")
-    st.markdown("*LSTM Neural Network · Indian Markets*")
+    st.markdown("## 📈 Stock Sight AI")
+    st.markdown("*Artificial Intelligence · Indian Markets*")
     st.divider()
 
     exchange = st.radio(
