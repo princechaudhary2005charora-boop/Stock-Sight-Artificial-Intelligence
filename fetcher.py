@@ -29,11 +29,66 @@ def _init_db():
         return False
 
 
+
 def _yfinance_fetch(ticker: str, start: str, end: str) -> pd.DataFrame:
-    df = yf.download(ticker, start=start, end=end, progress=False, auto_adjust=True)
+    """Fetch historical OHLCV data with a fallback method."""
+
+    df = pd.DataFrame()
+
+    # Method 1: Yahoo Finance download
+    try:
+        df = yf.download(
+            ticker,
+            start=start,
+            end=end,
+            progress=False,
+            auto_adjust=True,
+            threads=False,
+            timeout=20,
+        )
+    except Exception as e:
+        print(f"Download failed for {ticker}: {e}")
+
+    # Method 2: Retry using Ticker.history()
+    if df.empty:
+        try:
+            stock = yf.Ticker(ticker)
+            df = stock.history(
+                start=start,
+                end=end,
+                auto_adjust=True,
+            )
+        except Exception as e:
+            print(f"History fallback failed for {ticker}: {e}")
+
+    if df.empty:
+        return pd.DataFrame()
+
+    # Handle different yfinance MultiIndex column formats
     if isinstance(df.columns, pd.MultiIndex):
-        df.columns = df.columns.get_level_values(0)
+        for level in range(df.columns.nlevels):
+            values = set(df.columns.get_level_values(level))
+            if {"Open", "High", "Low", "Close"}.issubset(values):
+                df.columns = df.columns.get_level_values(level)
+                break
+
+    # Standardize column names
+    df.columns = [str(col).title() for col in df.columns]
+
+    required = ["Open", "High", "Low", "Close", "Volume"]
+
+    if not all(col in df.columns for col in required):
+        return pd.DataFrame()
+
+    df = df[required].copy()
+    df = df.dropna(subset=["Open", "High", "Low", "Close"])
+
+    # Remove timezone information if present
+    if getattr(df.index, "tz", None) is not None:
+        df.index = df.index.tz_localize(None)
+
     df.index.name = "Date"
+
     return df
 
 
